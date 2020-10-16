@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/mediaLibrary.dart';
+import 'package:flutter_app/playing_service.dart';
 import 'package:flutter_app/widgets/playControls.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -16,126 +18,17 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
-// class TestWid extends StatefulWidget {
-//   TestWid();
-
-//   @override
-//   _TestWidState createState() => _TestWidState();
-// }
-
-// class TestWid extends StatelessWidget {
-//   double _value = 0;
-//   bool _isPlaying = false;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: <Widget>[
-//           Container(
-//               child: SliderTheme(
-//             data: SliderTheme.of(context).copyWith(
-//               activeTrackColor: Colors.blue,
-//               inactiveTrackColor: Colors.grey[200],
-//               trackHeight: 2.0,
-//               thumbColor: Colors.blue[300],
-//               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7.0),
-//               overlayColor: Colors.lightBlue[200].withAlpha(32),
-//               overlayShape: RoundSliderOverlayShape(overlayRadius: 15.0),
-//             ),
-//             child: Slider(
-//               value: _value,
-//               min: 0.0,
-//               max: 10,
-//               onChanged: (value) {},
-//             ),
-//           )),
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//             children: [
-//               IconButton(
-//                 icon: Icon(Icons.favorite_border_rounded),
-//                 onPressed: () {},
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.replay_30_rounded),
-//                 onPressed: () {},
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.play_circle_outline),
-//                 onPressed: _start,
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.forward_30_rounded),
-//                 onPressed: () {},
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.ios_share),
-//                 onPressed: () {},
-//               ),
-//             ],
-//           ),
-//           RaisedButton(
-//             child: Text('Start'),
-//             onPressed: _start,
-//           ),
-//           RaisedButton(
-//             child: Text('Stop'),
-//             onPressed: _stop,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// void _start() async {
-//   await AudioService.start(backgroundTaskEntrypoint: _backgroundTaskEntrypoint);
-// }
-
-// void _stop() async {
-//   await AudioService.stop();
-// }
-
-// void _backgroundTaskEntrypoint() {
-//   AudioServiceBackground.run(() => AudioPlayerTask());
-// }
-
-// class AudioPlayerTask extends BackgroundAudioTask {
-//   final _audioPlayer = AudioPlayer();
-//   final _completer = Completer();
-
-//   @override
-//   Future<void> onStart(Map<String, dynamic> params) async {
-//     // Connect to the URL
-//     await _audioPlayer.setUrl(
-//         "https://chtbl.com/track/E341G/dts.podtrac.com/redirect.mp3/rss.art19.com/episodes/114f01af-3635-4d64-b5f2-6e04b229ae5c.mp3");
-//     // Now we're ready to play
-//     await _audioPlayer.play();
-//   }
-
-//   @override
-//   Future<void> onStop() async {
-//     // Stop playing audio
-//     await _audioPlayer.stop();
-//     // Shut down this background task
-//     await super.onStop();
-//   }
-
-//   @override
-//   onSeekTo(Duration position) {}
-// }
-
-// void main() => runApp(new MyApp());
-
 class TestWid extends StatelessWidget {
+  final mediaItems;
+
+  TestWid({this.mediaItems}) {}
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Audio Service Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: AudioServiceWidget(child: MainScreen()),
+      home: AudioServiceWidget(child: MainScreen(mediaItems: this.mediaItems)),
     );
   }
 }
@@ -144,6 +37,12 @@ class MainScreen extends StatelessWidget {
   /// Tracks the position while the user drags the seek bar.
   final BehaviorSubject<double> _dragPositionSubject =
       BehaviorSubject.seeded(null);
+
+  final mediaItems;
+
+  MainScreen({this.mediaItems}) {
+    AudioService.start(backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,59 +62,79 @@ class MainScreen extends StatelessWidget {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                new Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    PlayerButtons(icon: Icon(Icons.replay_30_rounded)),
-                    PlayerButtons(icon: Icon(Icons.play_arrow_rounded)),
-                    PlayerButtons(icon: Icon(Icons.forward_30_rounded))
-                  ],
-                ),
                 if (processingState == AudioProcessingState.none) ...[
-                  RaisedButton(
-                    child: Text("Start"),
-                    onPressed: () {
-                      AudioService.start(
-                        backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
-                        androidNotificationChannelName: 'Audio Service Demo',
-                        // Enable this if you want the Android service to exit the foreground state on pause.
-                        //androidStopForegroundOnPause: true,
-                        androidNotificationColor: 0xFF2196f3,
-                        androidNotificationIcon: 'mipmap/ic_launcher',
-                        androidEnableQueue: true,
-                      );
-                    },
-                  ),
+                  // RaisedButton(
+                  //   child: Text("Start"),
+                  //   onPressed: () {
+                  //     AudioService.start(
+                  //       backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+                  //       androidNotificationChannelName: 'Audio Service Demo',
+                  //       // Enable this if you want the Android service to exit the foreground state on pause.
+                  //       //androidStopForegroundOnPause: true,
+                  //       androidNotificationColor: 0xFF2196f3,
+                  //       androidNotificationIcon: 'mipmap/ic_launcher',
+                  //       androidEnableQueue: true,
+                  //     );
+                  //   },
+                  // ),
                   // if (kIsWeb || !Platform.isMacOS) textToSpeechButton(),
                 ] else ...[
                   if (queue != null && queue.isNotEmpty)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Column(
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.skip_previous),
-                          iconSize: 64.0,
-                          onPressed: mediaItem == queue.first
-                              ? null
-                              : AudioService.skipToPrevious,
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.skip_next),
-                          iconSize: 64.0,
-                          onPressed: mediaItem == queue.last
-                              ? null
-                              : AudioService.skipToNext,
+                        if (mediaItem != null)
+                          Container(
+                            padding: EdgeInsets.all(25),
+                            child: getImage(mediaItem),
+                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // IconButton(
+                            //   icon: Icon(Icons.skip_previous),
+                            //   iconSize: 30.0,
+                            //   onPressed: mediaItem == queue.first
+                            //       ? null
+                            //       : AudioService.skipToPrevious,
+                            // ),
+                            IconButton(
+                              icon: Icon(Icons.favorite_border_rounded),
+                              iconSize: 30.0,
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.replay_10_rounded),
+                              iconSize: 30.0,
+                              onPressed: () {
+                                AudioService.rewind();
+                              },
+                            ),
+                            if (playing) pauseButton() else playButton(),
+                            IconButton(
+                              icon: Icon(Icons.forward_10_rounded),
+                              iconSize: 30.0,
+                              onPressed: () {
+                                AudioService.fastForward();
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.share_outlined),
+                              iconSize: 30,
+                              onPressed: () {},
+                            )
+                            // stopButton(),
+                            // IconButton(
+                            //   icon: Icon(Icons.skip_next),
+                            //   iconSize: 30.0,
+                            //   onPressed: mediaItem == queue.last
+                            //       ? null
+                            //       : AudioService.skipToNext,
+                            // ),
+                          ],
                         ),
                       ],
                     ),
                   if (mediaItem?.title != null) Text(mediaItem.title),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (playing) pauseButton() else playButton(),
-                      stopButton(),
-                    ],
-                  ),
                   positionIndicator(mediaItem, state),
                   Text("Processing state: " +
                       "$processingState".replaceAll(RegExp(r'^.*\.'), '')),
@@ -253,22 +172,29 @@ class MainScreen extends StatelessWidget {
               ScreenState(queue, mediaItem, playbackState));
 
   IconButton playButton() => IconButton(
-        icon: Icon(Icons.play_arrow),
-        iconSize: 64.0,
+        icon: Icon(Icons.play_circle_fill_outlined),
+        iconSize: 30.0,
         onPressed: AudioService.play,
       );
 
   IconButton pauseButton() => IconButton(
-        icon: Icon(Icons.pause),
-        iconSize: 64.0,
+        icon: Icon(Icons.pause_circle_filled_outlined),
+        iconSize: 30.0,
         onPressed: AudioService.pause,
       );
 
   IconButton stopButton() => IconButton(
         icon: Icon(Icons.stop),
-        iconSize: 64.0,
+        iconSize: 30.0,
         onPressed: AudioService.stop,
       );
+
+  Widget getImage(MediaItem mediaItem) {
+    if (mediaItem.artUri == null) {
+      return null;
+    }
+    return Image.network(mediaItem.artUri);
+  }
 
   Widget positionIndicator(MediaItem mediaItem, PlaybackState state) {
     double seekPos;
@@ -318,13 +244,13 @@ void _audioPlayerTaskEntrypoint() async {
 
 /// This task defines logic for playing a list of podcast episodes.
 class AudioPlayerTask extends BackgroundAudioTask {
-  final _mediaLibrary = MediaLibrary();
+  final mediaLibrary = new MediaLibrary();
   AudioPlayer _player = new AudioPlayer();
   AudioProcessingState _skipState;
   Seeker _seeker;
   StreamSubscription<PlaybackEvent> _eventSubscription;
 
-  List<MediaItem> get queue => _mediaLibrary.items;
+  List<MediaItem> get queue => mediaLibrary.items;
   int get index => _player.currentIndex;
   MediaItem get mediaItem => index == null ? null : queue[index];
 
@@ -405,10 +331,10 @@ class AudioPlayerTask extends BackgroundAudioTask {
   Future<void> onSeekTo(Duration position) => _player.seek(position);
 
   @override
-  Future<void> onFastForward() => _seekRelative(fastForwardInterval);
+  Future<void> onFastForward() => _seekRelative(Duration(seconds: 30));
 
   @override
-  Future<void> onRewind() => _seekRelative(-rewindInterval);
+  Future<void> onRewind() => _seekRelative(Duration(seconds: -30));
 
   @override
   Future<void> onSeekForward(bool begin) async => _seekContinuously(begin, 1);
@@ -500,33 +426,6 @@ class ScreenState {
   final PlaybackState playbackState;
 
   ScreenState(this.queue, this.mediaItem, this.playbackState);
-}
-
-// Provides access to a library of media items. In your app, this could come
-// from a database or web service.
-class MediaLibrary {
-  final _items = <MediaItem>[
-    MediaItem(
-      id: "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3",
-      album: "Science Friday",
-      title: "A Salute To Head-Scratching Science",
-      artist: "Science Friday and WNYC Studios",
-      duration: Duration(milliseconds: 5739820),
-      artUri:
-          "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-    ),
-    MediaItem(
-      id: "https://s3.amazonaws.com/scifri-segments/scifri201711241.mp3",
-      album: "Science Friday",
-      title: "From Cat Rheology To Operatic Incompetence",
-      artist: "Science Friday and WNYC Studios",
-      duration: Duration(milliseconds: 2856950),
-      artUri:
-          "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-    ),
-  ];
-
-  List<MediaItem> get items => _items;
 }
 
 // An object that performs interruptable sleep.
