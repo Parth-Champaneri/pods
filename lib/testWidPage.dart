@@ -1,20 +1,11 @@
 import 'dart:async';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/mediaLibrary.dart';
-import 'package:flutter_app/playing_service.dart';
-import 'package:flutter_app/widgets/playControls.dart';
 import 'package:just_audio/just_audio.dart';
-
-import 'dart:async';
-import 'dart:io';
 import 'dart:math';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -41,7 +32,7 @@ class MainScreen extends StatelessWidget {
   final mediaItems;
 
   MainScreen({this.mediaItems}) {
-    AudioService.start(backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint);
+    // AudioService.start(backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint);
   }
 
   @override
@@ -77,7 +68,6 @@ class MainScreen extends StatelessWidget {
                   //     );
                   //   },
                   // ),
-                  // if (kIsWeb || !Platform.isMacOS) textToSpeechButton(),
                 ] else ...[
                   if (queue != null && queue.isNotEmpty)
                     Column(
@@ -295,7 +285,9 @@ class AudioPlayerTask extends BackgroundAudioTask {
             queue.map((item) => AudioSource.uri(Uri.parse(item.id))).toList(),
       ));
       // In this example, we automatically start playing on start.
-      onPlay();
+
+      // Don't automatically start on play
+      // onPlay();
     } catch (e) {
       print("Error: $e");
       onStop();

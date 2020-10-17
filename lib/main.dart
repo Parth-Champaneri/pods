@@ -5,7 +5,9 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_app/discussionBoard.dart';
 import 'package:flutter_app/downloadedEpisodes.dart';
+import 'package:flutter_app/episodeQueue.dart';
 import 'package:flutter_app/models/episode.dart';
 import 'package:flutter_app/playing_service.dart';
 import 'package:flutter_app/search.dart';
@@ -22,11 +24,11 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: new ThemeData(
           primarySwatch: Colors.blue,
-          fontFamily: 'Opensans',
+          // fontFamily: '',
           appBarTheme: AppBarTheme(
               textTheme: ThemeData.light().textTheme.copyWith(
                     title: TextStyle(
-                      fontFamily: 'Opensans',
+                      // fontFamily: 'Opensans',
                       fontSize: 20,
                     ),
                   )),
@@ -49,10 +51,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 3;
+  int _currentIndex = 0;
   static MyPlayer homeWidget = new MyPlayer();
 
-  static List<String> titles = ['Player', 'Downloads', 'Browse', 'Player'];
+  static List<String> titles = ['Downloads', 'Browse', 'Player'];
 
   static List<Episode> downEps = [
     Episode(
@@ -87,45 +89,42 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   final List<Widget> _children = [
-    homeWidget,
-    EpisodesList(downEps),
-    SearchWidget(),
-    TestWid(
-      mediaItems: new MediaLibrary(),
+    // homeWidget,
+    // SafeArea(child: EpisodesList(downEps)),
+    DiscusssionBoard(),
+    SafeArea(child: SearchWidget()),
+    SafeArea(
+      child: TestWid(
+        mediaItems: new MediaLibrary(),
+      ),
     )
   ];
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        centerTitle: false,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Container(
-          margin: EdgeInsets.only(right: 20),
-          child: new Text(titles[_currentIndex],
-              style: new TextStyle(
-                  color: Colors.black,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold)),
-        ),
-      ),
+      // appBar: new AppBar(
+      //   centerTitle: false,
+      //   backgroundColor: Colors.white,
+      //   elevation: 0,
+      //   title: Container(
+      //     margin: EdgeInsets.only(right: 20),
+      //     child: new Text(titles[_currentIndex],
+      //         style: new TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 28,
+      //             fontWeight: FontWeight.bold)),
+      //   ),
+      // ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         elevation: 0,
         onTap: onTabTapped,
         backgroundColor: Colors.white,
+        selectedLabelStyle: TextStyle(color: Colors.black),
         currentIndex:
             _currentIndex, // this will be set when a new tab is tapped
         items: [
-          BottomNavigationBarItem(
-            icon: new Icon(
-              Icons.play_arrow,
-              color: Colors.grey,
-            ),
-            title: new Text('Player'),
-          ),
           BottomNavigationBarItem(
             icon: new Icon(
               Icons.file_download,
