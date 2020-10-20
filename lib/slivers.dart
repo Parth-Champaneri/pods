@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:share/share.dart';
 
-class SearchWidget extends StatelessWidget {
-  SearchWidget();
+class SliversExample extends StatelessWidget {
+  SliversExample();
 
   @override
   Widget build(BuildContext context) {

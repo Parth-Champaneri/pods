@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_app/discussionBoard.dart';
 import 'package:flutter_app/downloadedEpisodes.dart';
 import 'package:flutter_app/episodeQueue.dart';
+import 'package:flutter_app/feed.dart';
 import 'package:flutter_app/models/episode.dart';
 import 'package:flutter_app/playing_service.dart';
 import 'package:flutter_app/search.dart';
@@ -92,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // homeWidget,
     // SafeArea(child: EpisodesList(downEps)),
     DiscusssionBoard(),
-    SafeArea(child: SearchWidget()),
+    PodFeed(),
     SafeArea(
       child: TestWid(
         mediaItems: new MediaLibrary(),

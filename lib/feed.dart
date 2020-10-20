@@ -1,0 +1,62 @@
+import 'package:flutter/material.dart';
+
+class PodFeed extends StatefulWidget {
+  @override
+  _PodFeedState createState() => _PodFeedState();
+}
+
+class _PodFeedState extends State<PodFeed> {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: RefreshIndicator(
+        onRefresh: _getData,
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: ListView(children: [
+            Row(
+              children: [
+                Text(
+                  "Latest Updates",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "San Fransisco",
+                    fontSize: 28,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              color: Colors.black,
+              decoration: new BoxDecoration(
+                  color: Colors.black,
+                  image: DecorationImage(
+                    image: ImageProvider(
+                      child: Image.network(
+                          "https://content.production.cdn.art19.com/images/69/6e/7c/4a/696e7c4a-a7e8-4fb4-8a6f-e9eea70fa13c/9438806119cac21fa439cb167eb3ede90a2fb3e04c2b42f434fc6393a9008ceefd466aa848fa137033393fc3051355d989756de55b9edf5e9b1333687010249b.jpeg"),
+                    ),
+                  )),
+              margin: EdgeInsets.symmetric(vertical: 10),
+              child: Row(children: [
+                Expanded(
+                  child: Image.network(
+                      "https://content.production.cdn.art19.com/images/69/6e/7c/4a/696e7c4a-a7e8-4fb4-8a6f-e9eea70fa13c/9438806119cac21fa439cb167eb3ede90a2fb3e04c2b42f434fc6393a9008ceefd466aa848fa137033393fc3051355d989756de55b9edf5e9b1333687010249b.jpeg"),
+                ),
+              ]),
+            ),
+            Row(children: [
+              Expanded(
+                child: Image.network(
+                    "https://img.podcastone.com/images/1237/harbinger-pc1logo.png"),
+              ),
+            ]),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _getData() async {
+    setState(() {});
+  }
+}
