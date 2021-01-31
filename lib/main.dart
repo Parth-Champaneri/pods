@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:audio_service/audio_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app/discussionBoard.dart';
@@ -13,34 +14,71 @@ import 'package:flutter_app/models/episode.dart';
 import 'package:flutter_app/playing_service.dart';
 import 'package:flutter_app/search.dart';
 import 'package:flutter_app/testWidPage.dart';
+import 'feed2.dart';
 import 'player.dart';
+import 'package:flutter_app/routes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 
-void main() => runApp(MyApp());
+final FirebaseAuth _auth = FirebaseAuth.instance;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(LoginApp());
+}
+
+class LoginApp extends StatelessWidget {
+  String initialRoute = '';
+
+  LoginApp() {
+    FirebaseAuth _auth = FirebaseAuth.instance;
+    this.initialRoute = _auth.currentUser == null ? '/login' : '/home';
+  }
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'My Login App',
+      initialRoute: this.initialRoute,
+      theme: new ThemeData(
+        primarySwatch: Colors.red,
+      ),
+      routes: routes,
+    );
+  }
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Spotlight',
-        debugShowCheckedModeBanner: false,
-        theme: new ThemeData(
-          primarySwatch: Colors.blue,
-          // fontFamily: '',
-          appBarTheme: AppBarTheme(
-              textTheme: ThemeData.light().textTheme.copyWith(
-                    title: TextStyle(
-                      // fontFamily: 'Opensans',
-                      fontSize: 20,
-                    ),
-                  )),
-          textTheme: TextTheme(
-            headline: TextStyle(
-              fontSize: 22.0,
-              fontWeight: FontWeight.bold,
-            ),
+      // routes: routes,
+      title: 'Spotlight',
+      debugShowCheckedModeBanner: false,
+      theme: new ThemeData(
+        primarySwatch: Colors.blue,
+        primaryColor: Colors.blue,
+        accentColor: Colors.black87,
+        // fontFamily: '',
+        appBarTheme: AppBarTheme(
+            color: Colors.black87,
+            textTheme: ThemeData.light().textTheme.copyWith(
+                  title: TextStyle(
+                    // fontFamily: 'Opensans',
+                    fontSize: 20,
+                  ),
+                )),
+        textTheme: TextTheme(
+          headline1: TextStyle(
+            fontSize: 22.0,
+            color: Colors.grey[900],
+            fontWeight: FontWeight.bold,
           ),
         ),
-        home: new MyHomePage());
+      ),
+      home: new MyHomePage(),
+    );
   }
 }
 
@@ -93,7 +131,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // homeWidget,
     // SafeArea(child: EpisodesList(downEps)),
     DiscusssionBoard(),
-    PodFeed(),
+    PodFeedSmall(),
+    // PodFeed(),
+    // SearchWidget(),
     SafeArea(
       child: TestWid(
         mediaItems: new MediaLibrary(),
@@ -104,19 +144,72 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      // appBar: new AppBar(
-      //   centerTitle: false,
-      //   backgroundColor: Colors.white,
-      //   elevation: 0,
-      //   title: Container(
-      //     margin: EdgeInsets.only(right: 20),
-      //     child: new Text(titles[_currentIndex],
-      //         style: new TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 28,
-      //             fontWeight: FontWeight.bold)),
-      //   ),
-      // ),
+      drawer: Builder(builder: (BuildContext context) {
+        return Drawer(
+          child: ListView(
+            // Important: Remove any padding from the ListView.
+
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Center(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Container(
+                      child: CircleAvatar(
+                        radius: 25,
+                      ),
+                    ),
+                    Text('Parth Champaneri',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).primaryColorDark,
+                        )),
+                  ],
+                )),
+              ),
+              ListTile(
+                title: RaisedButton(
+                  elevation: 0,
+                  color: Theme.of(context).primaryColorDark,
+                  child:
+                      Text("Sign Out", style: TextStyle(color: Colors.white)),
+                  onPressed: () async {
+                    final User user = await _auth.currentUser;
+                    if (user == null) {
+                      Scaffold.of(context).showSnackBar(const SnackBar(
+                        content: Text('No one has signed in.'),
+                      ));
+                      Navigator.pop(context);
+                      return;
+                    }
+                    await _auth.signOut();
+                    final String uid = user.email;
+                    Navigator.pop(context);
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content: Text(uid + ' has successfully signed out.'),
+                    ));
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+      appBar: new AppBar(
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Container(
+          margin: EdgeInsets.only(right: 20),
+          child: new Text(titles[_currentIndex],
+              style: new TextStyle(
+                  color: Colors.black,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold)),
+        ),
+      ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         elevation: 0,
@@ -128,24 +221,24 @@ class _MyHomePageState extends State<MyHomePage> {
         items: [
           BottomNavigationBarItem(
             icon: new Icon(
-              Icons.file_download,
+              Icons.comment,
               color: Colors.grey,
             ),
-            title: new Text('Downloads'),
+            label: 'Discussion',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
               color: Colors.grey,
             ),
-            title: new Text('Browse'),
+            label: 'Search',
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.add_circle,
+              Icons.play_arrow,
               color: Colors.grey,
             ),
-            title: new Text('Test'),
+            label: 'Test',
           ),
         ],
       ),

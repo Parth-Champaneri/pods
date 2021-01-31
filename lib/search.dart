@@ -1,8 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
 class SearchWidget extends StatelessWidget {
-  SearchWidget();
+  SearchWidget() {
+    Firestore.instance.collection('directory').snapshots().listen((data) {
+      data.documents.forEach((doc) {
+        print(doc['showTitle']);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +49,8 @@ class SearchWidget extends StatelessWidget {
                     return Container(
                         alignment: Alignment.center,
                         child: Image.network(
-                            "https://content.production.cdn.art19.com/images/69/6e/7c/4a/696e7c4a-a7e8-4fb4-8a6f-e9eea70fa13c/9438806119cac21fa439cb167eb3ede90a2fb3e04c2b42f434fc6393a9008ceefd466aa848fa137033393fc3051355d989756de55b9edf5e9b1333687010249b.jpeg"));
+                          "https://content.production.cdn.art19.com/images/69/6e/7c/4a/696e7c4a-a7e8-4fb4-8a6f-e9eea70fa13c/9438806119cac21fa439cb167eb3ede90a2fb3e04c2b42f434fc6393a9008ceefd466aa848fa137033393fc3051355d989756de55b9edf5e9b1333687010249b.jpeg",
+                        ));
                   },
                   childCount: 4,
                 ),

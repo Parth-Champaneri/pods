@@ -16,19 +16,11 @@ class TestWid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Audio Service Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: AudioServiceWidget(child: MainScreen(mediaItems: this.mediaItems)),
-    );
+    return AudioServiceWidget(child: MainScreen(mediaItems: this.mediaItems));
   }
 }
 
-class MainScreen extends StatelessWidget {
-  /// Tracks the position while the user drags the seek bar.
-  final BehaviorSubject<double> _dragPositionSubject =
-      BehaviorSubject.seeded(null);
-
+class MainScreen extends StatefulWidget {
   final mediaItems;
 
   MainScreen({this.mediaItems}) {
@@ -36,119 +28,127 @@ class MainScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: StreamBuilder<ScreenState>(
-          stream: _screenStateStream,
-          builder: (context, snapshot) {
-            final screenState = snapshot.data;
-            final queue = screenState?.queue;
-            final mediaItem = screenState?.mediaItem;
-            final state = screenState?.playbackState;
-            final processingState =
-                state?.processingState ?? AudioProcessingState.none;
-            final playing = state?.playing ?? false;
+  _MainScreenState createState() => _MainScreenState();
+}
 
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (processingState == AudioProcessingState.none) ...[
-                  // RaisedButton(
-                  //   child: Text("Start"),
-                  //   onPressed: () {
-                  //     AudioService.start(
-                  //       backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
-                  //       androidNotificationChannelName: 'Audio Service Demo',
-                  //       // Enable this if you want the Android service to exit the foreground state on pause.
-                  //       //androidStopForegroundOnPause: true,
-                  //       androidNotificationColor: 0xFF2196f3,
-                  //       androidNotificationIcon: 'mipmap/ic_launcher',
-                  //       androidEnableQueue: true,
-                  //     );
-                  //   },
-                  // ),
-                ] else ...[
-                  if (queue != null && queue.isNotEmpty)
-                    Column(
-                      children: [
-                        if (mediaItem != null)
-                          Container(
-                            padding: EdgeInsets.all(25),
-                            child: getImage(mediaItem),
-                          ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            // IconButton(
-                            //   icon: Icon(Icons.skip_previous),
-                            //   iconSize: 30.0,
-                            //   onPressed: mediaItem == queue.first
-                            //       ? null
-                            //       : AudioService.skipToPrevious,
-                            // ),
-                            IconButton(
-                              icon: Icon(Icons.favorite_border_rounded),
-                              iconSize: 30.0,
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.replay_10_rounded),
-                              iconSize: 30.0,
-                              onPressed: () {
-                                AudioService.rewind();
-                              },
-                            ),
-                            if (playing) pauseButton() else playButton(),
-                            IconButton(
-                              icon: Icon(Icons.forward_10_rounded),
-                              iconSize: 30.0,
-                              onPressed: () {
-                                AudioService.fastForward();
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.share_outlined),
-                              iconSize: 30,
-                              onPressed: () {},
-                            )
-                            // stopButton(),
-                            // IconButton(
-                            //   icon: Icon(Icons.skip_next),
-                            //   iconSize: 30.0,
-                            //   onPressed: mediaItem == queue.last
-                            //       ? null
-                            //       : AudioService.skipToNext,
-                            // ),
-                          ],
+class _MainScreenState extends State<MainScreen> {
+  /// Tracks the position while the user drags the seek bar.
+  final BehaviorSubject<double> _dragPositionSubject =
+      BehaviorSubject.seeded(null);
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Container(
+      child: StreamBuilder<ScreenState>(
+        stream: _screenStateStream,
+        builder: (context, snapshot) {
+          final screenState = snapshot.data;
+          final queue = screenState?.queue;
+          final mediaItem = screenState?.mediaItem;
+          final state = screenState?.playbackState;
+          final processingState =
+              state?.processingState ?? AudioProcessingState.none;
+          final playing = state?.playing ?? false;
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (processingState == AudioProcessingState.none) ...[
+                RaisedButton(
+                  child: Text("Start"),
+                  onPressed: () {
+                    AudioService.start(
+                      backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
+                      androidNotificationChannelName: 'Audio Service Demo',
+                      // Enable this if you want the Android service to exit the foreground state on pause.
+                      //androidStopForegroundOnPause: true,
+                      androidNotificationColor: 0xFF2196f3,
+                      androidNotificationIcon: 'mipmap/ic_launcher',
+                      androidEnableQueue: true,
+                    );
+                  },
+                ),
+              ] else ...[
+                if (queue != null && queue.isNotEmpty)
+                  Column(
+                    children: [
+                      if (mediaItem != null)
+                        Container(
+                          padding: EdgeInsets.all(25),
+                          child: getImage(mediaItem),
                         ),
-                      ],
-                    ),
-                  if (mediaItem?.title != null) Text(mediaItem.title),
-                  positionIndicator(mediaItem, state),
-                  Text("Processing state: " +
-                      "$processingState".replaceAll(RegExp(r'^.*\.'), '')),
-                  StreamBuilder(
-                    stream: AudioService.customEventStream,
-                    builder: (context, snapshot) {
-                      return Text("custom event: ${snapshot.data}");
-                    },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // IconButton(
+                          //   icon: Icon(Icons.skip_previous),
+                          //   iconSize: 30.0,
+                          //   onPressed: mediaItem == queue.first
+                          //       ? null
+                          //       : AudioService.skipToPrevious,
+                          // ),
+                          IconButton(
+                            icon: Icon(Icons.favorite_border_rounded),
+                            iconSize: 30.0,
+                            onPressed: () {},
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.replay_10_rounded),
+                            iconSize: 30.0,
+                            onPressed: () {
+                              AudioService.rewind();
+                            },
+                          ),
+                          if (playing) pauseButton() else playButton(),
+                          IconButton(
+                            icon: Icon(Icons.forward_10_rounded),
+                            iconSize: 30.0,
+                            onPressed: () {
+                              AudioService.fastForward();
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.share_outlined),
+                            iconSize: 30,
+                            onPressed: () {},
+                          )
+                          // stopButton(),
+                          // IconButton(
+                          //   icon: Icon(Icons.skip_next),
+                          //   iconSize: 30.0,
+                          //   onPressed: mediaItem == queue.last
+                          //       ? null
+                          //       : AudioService.skipToNext,
+                          // ),
+                        ],
+                      ),
+                    ],
                   ),
-                  StreamBuilder<bool>(
-                    stream: AudioService.notificationClickEventStream,
-                    builder: (context, snapshot) {
-                      return Text(
-                        'Notification Click Status: ${snapshot.data}',
-                      );
-                    },
-                  ),
-                ],
+                if (mediaItem?.title != null) Text(mediaItem.title),
+                positionIndicator(mediaItem, state),
+                Text("Processing state: " +
+                    "$processingState".replaceAll(RegExp(r'^.*\.'), '')),
+                StreamBuilder(
+                  stream: AudioService.customEventStream,
+                  builder: (context, snapshot) {
+                    return Text("custom event: ${snapshot.data}");
+                  },
+                ),
+                StreamBuilder<bool>(
+                  stream: AudioService.notificationClickEventStream,
+                  builder: (context, snapshot) {
+                    return Text(
+                      'Notification Click Status: ${snapshot.data}',
+                    );
+                  },
+                ),
               ],
-            );
-          },
-        ),
+            ],
+          );
+        },
       ),
-    );
+    ));
   }
 
   /// Encapsulate all the different data we're interested in into a single
